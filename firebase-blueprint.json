@@ -1,0 +1,367 @@
+{
+  "entities": {
+    "WeddingConfig": {
+      "title": "Wedding Configuration",
+      "description": "Live editable wedding invitation, couple, host, venue, and ceremony schedule details.",
+      "type": "object",
+      "properties": {
+        "groomName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "brideName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "hostsName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "weddingDateLabel": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "weddingIsoTarget": { "type": "string", "minLength": 10, "maxLength": 40 },
+        "venueName": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "venueAddress": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "venueCity": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "invitationMessage": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "haldiTitle": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "haldiTime": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "haldiVenue": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "haldiDressCode": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "haldiDescription": { "type": "string", "minLength": 1, "maxLength": 400 },
+        "weddingTitle": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "weddingTime": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "weddingVenue": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "weddingDressCode": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "weddingDescription": { "type": "string", "minLength": 1, "maxLength": 400 },
+        "googleMapsUrl": { "type": "string", "maxLength": 500 },
+        "videoInvitationUrl": { "type": "string", "maxLength": 300 },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string", "maxLength": 120 }
+      },
+      "required": [
+        "groomName",
+        "brideName",
+        "hostsName",
+        "weddingDateLabel",
+        "weddingIsoTarget",
+        "venueName",
+        "venueAddress",
+        "venueCity",
+        "invitationMessage",
+        "haldiTitle",
+        "haldiTime",
+        "haldiVenue",
+        "haldiDressCode",
+        "haldiDescription",
+        "weddingTitle",
+        "weddingTime",
+        "weddingVenue",
+        "weddingDressCode",
+        "weddingDescription",
+        "updatedAt",
+        "updatedBy"
+      ]
+    },
+    "PublicInvitee": {
+      "title": "Public Family Invitee",
+      "description": "Zero-PII head-of-family lookup record so guests can search their family name and confirm availability without login.",
+      "type": "object",
+      "properties": {
+        "headOfFamilyName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "nameLower": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "side": {
+          "type": "string",
+          "enum": ["Bride's Family", "Groom's Family", "Close Friends"],
+          "maxLength": 30
+        },
+        "availability": {
+          "type": "string",
+          "enum": ["Pending", "Will Attend with Family", "Unable to Attend"],
+          "maxLength": 40
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["headOfFamilyName", "nameLower", "side", "availability", "updatedAt"]
+    },
+    "RsvpLookup": {
+      "title": "Private Phone-Verified RSVP Lookup",
+      "description": "Hashed mobile-number lookup document (doc ID is SHA-256 of phone) allowing a guest to look up and confirm only their own family invitation without browsing other guests.",
+      "type": "object",
+      "properties": {
+        "inviteeId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "headOfFamilyName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "side": {
+          "type": "string",
+          "enum": ["Bride's Family", "Groom's Family", "Close Friends"],
+          "maxLength": 30
+        },
+        "availability": {
+          "type": "string",
+          "enum": ["Pending", "Will Attend with Family", "Unable to Attend"],
+          "maxLength": 40
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["inviteeId", "headOfFamilyName", "side", "availability", "updatedAt"]
+    },
+    "InviteePrivate": {
+      "title": "Private Invitee Details",
+      "description": "Host-only planning metadata (tentative guest count, mandatory phone, notification status, and notes) isolated from public invitee lookups.",
+      "type": "object",
+      "properties": {
+        "tentativeGuests": { "type": "integer" },
+        "phone": { "type": "string", "minLength": 7, "maxLength": 30 },
+        "note": { "type": "string", "maxLength": 500 },
+        "addedBy": { "type": "string", "maxLength": 120 },
+        "notifiedVia": {
+          "type": "string",
+          "enum": ["Pending", "WhatsApp", "SMS"],
+          "maxLength": 20
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tentativeGuests", "phone", "note", "addedBy", "notifiedVia", "updatedAt"]
+    },
+    "HostMember": {
+      "title": "Authorized Family Host",
+      "description": "Google account email authorized to access the Management Portal alongside primary hosts.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "minLength": 3, "maxLength": 120 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "role": { "type": "string", "maxLength": 60 },
+        "addedBy": { "type": "string", "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "name", "role", "addedBy", "createdAt"]
+    },
+    "RSVP": {
+      "title": "Legacy Guest RSVP",
+      "description": "Write-only RSVP submissions readable strictly by hosts.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "side": {
+          "type": "string",
+          "enum": ["Bride's Family", "Groom's Family", "Close Friends"],
+          "maxLength": 30
+        },
+        "attendance": {
+          "type": "string",
+          "enum": ["Both", "Morning Haldi Only", "Evening Wedding Only", "Unable to Attend"],
+          "maxLength": 40
+        },
+        "guestCount": { "type": "integer" },
+        "phone": { "type": "string", "maxLength": 30 },
+        "note": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "side", "attendance", "guestCount", "phone", "note", "createdAt"]
+    },
+    "Wish": {
+      "title": "Family Blessing",
+      "description": "Public celebratory wish on the real-time Family Blessings Wall.",
+      "type": "object",
+      "properties": {
+        "guestName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "relationship": { "type": "string", "maxLength": 60 },
+        "ceremony": {
+          "type": "string",
+          "enum": ["Morning Haldi", "Evening Wedding", "Both Celebrations"],
+          "maxLength": 40
+        },
+        "message": { "type": "string", "minLength": 2, "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["guestName", "relationship", "ceremony", "message", "createdAt"]
+    },
+    "Vendor": {
+      "title": "Wedding Vendor & Atelier",
+      "description": "Private host-only wedding vendor, atelier, and concierge tracker.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Decor & Mandap",
+            "Catering & Feast",
+            "Photography & Cinema",
+            "Couture & Styling",
+            "Music & Baraat",
+            "Hospitality & Stay",
+            "Other"
+          ],
+          "maxLength": 40
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Confirmed / Booked", "In Inquiry / Pending", "Signature / Luxury"],
+          "maxLength": 30
+        },
+        "ceremony": {
+          "type": "string",
+          "enum": ["Morning Haldi", "Evening Wedding", "Both Celebrations"],
+          "maxLength": 40
+        },
+        "contact": { "type": "string", "maxLength": 100 },
+        "estimate": { "type": "string", "maxLength": 60 },
+        "notes": { "type": "string", "maxLength": 400 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "name",
+        "category",
+        "status",
+        "ceremony",
+        "contact",
+        "estimate",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "WeddingEvent": {
+      "title": "Wedding Ceremony Event",
+      "description": "Flexible wedding event or ceremony added and edited by family hosts (e.g., Haldi, Mehendi, Sangeet, Wedding, Reception).",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "chapterLabel": { "type": "string", "maxLength": 80 },
+        "dateLabel": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "timeLabel": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "venue": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "dressCode": { "type": "string", "maxLength": 140 },
+        "description": { "type": "string", "maxLength": 500 },
+        "imageKey": {
+          "type": "string",
+          "enum": ["haldi", "wedding", "custom"],
+          "maxLength": 20
+        },
+        "sortOrder": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "title",
+        "chapterLabel",
+        "dateLabel",
+        "timeLabel",
+        "venue",
+        "dressCode",
+        "description",
+        "imageKey",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "HostNotification": {
+      "title": "Host Activity Notification",
+      "description": "Real-time alert created when a guest posts a blessing or confirms RSVP availability.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["blessing", "rsvp"], "maxLength": 20 },
+        "actorName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "recipientEmail": { "type": "string", "maxLength": 120 },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "actorName", "summary", "recipientEmail", "read", "createdAt"]
+    },
+    "Expense": {
+      "title": "Wedding Expense Record",
+      "description": "Private host-only wedding expense ledger entry with payment mode (Cash, UPI, etc.), category, and optional confirmed vendor link.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Venue & Catering",
+            "Dresses & Couture",
+            "Return Gifts & Favors",
+            "Jewellery & Shagun",
+            "Decor & Flowers",
+            "Photography & Cinema",
+            "Travel & Hospitality",
+            "Pandit & Rituals",
+            "Other / Misc"
+          ],
+          "maxLength": 40
+        },
+        "amount": { "type": "number" },
+        "paymentMode": {
+          "type": "string",
+          "enum": ["UPI", "Cash", "Bank Transfer / NEFT", "Card", "Cheque", "Pending"],
+          "maxLength": 30
+        },
+        "paymentStatus": {
+          "type": "string",
+          "enum": ["Paid", "Advance Paid", "Pending"],
+          "maxLength": 20
+        },
+        "paidBy": { "type": "string", "maxLength": 80 },
+        "expenseDate": { "type": "string", "maxLength": 20 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "linkedVendorId": { "type": "string", "maxLength": 128 },
+        "addedBy": { "type": "string", "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "title",
+        "category",
+        "amount",
+        "paymentMode",
+        "paymentStatus",
+        "paidBy",
+        "expenseDate",
+        "notes",
+        "linkedVendorId",
+        "addedBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/weddingConfig/{configId}": {
+      "schema": { "$ref": "#/entities/WeddingConfig" },
+      "description": "Publicly readable wedding metadata (document 'main') editable only by authenticated family hosts."
+    },
+    "/weddingEvents/{eventId}": {
+      "schema": { "$ref": "#/entities/WeddingEvent" },
+      "description": "Publicly readable ceremony itinerary events managed by authenticated family hosts."
+    },
+    "/publicInvitees/{inviteeId}": {
+      "schema": { "$ref": "#/entities/PublicInvitee" },
+      "description": "Host-listable family invitee directory; individual doc updatable by verified guest during RSVP."
+    },
+    "/rsvpLookup/{lookupId}": {
+      "schema": { "$ref": "#/entities/RsvpLookup" },
+      "description": "Non-listable SHA-256 phone-keyed lookup allowing guests to retrieve and confirm only their own family invitation."
+    },
+    "/inviteePrivate/{inviteeId}": {
+      "schema": { "$ref": "#/entities/InviteePrivate" },
+      "description": "Host-only tentative guest counts, phone numbers, and planning notes."
+    },
+    "/hostMembers/{memberId}": {
+      "schema": { "$ref": "#/entities/HostMember" },
+      "description": "Locked collection; portal access is strictly restricted to the 4 hardcoded family host emails."
+    },
+    "/rsvps/{rsvpId}": {
+      "schema": { "$ref": "#/entities/RSVP" },
+      "description": "Legacy RSVP submissions readable strictly by authenticated hosts."
+    },
+    "/wishes/{wishId}": {
+      "schema": { "$ref": "#/entities/Wish" },
+      "description": "Public real-time Family Blessings Wall."
+    },
+    "/vendors/{vendorId}": {
+      "schema": { "$ref": "#/entities/Vendor" },
+      "description": "Host-only wedding vendor and atelier concierge tracker."
+    },
+    "/hostNotifications/{notifId}": {
+      "schema": { "$ref": "#/entities/HostNotification" },
+      "description": "Real-time RSVP and blessing notifications readable and manageable strictly by authorized hosts."
+    },
+    "/expenses/{expenseId}": {
+      "schema": { "$ref": "#/entities/Expense" },
+      "description": "Host-only wedding expense ledger and payment-mode tracker."
+    }
+  }
+}

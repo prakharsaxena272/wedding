@@ -1,0 +1,403 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net: deny all by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidEmailDocId(id) {
+      return id is string && id.size() >= 3 && id.size() <= 120 && id.matches('^[a-zA-Z0-9_.+\\-@]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isHost() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+          'prakharsaxena579@gmail.com',
+          'vksaxena2000@gmail.com',
+          'shiprakanpur2012@gmail.com',
+          'divyanhsaxena1749@gmail.com'
+        ];
+    }
+
+    function isValidWeddingConfig(data) {
+      return data.keys().hasAll([
+        'groomName', 'brideName', 'hostsName', 'weddingDateLabel', 'weddingIsoTarget',
+        'venueName', 'venueAddress', 'venueCity', 'invitationMessage',
+        'haldiTitle', 'haldiTime', 'haldiVenue', 'haldiDressCode', 'haldiDescription',
+        'weddingTitle', 'weddingTime', 'weddingVenue', 'weddingDressCode', 'weddingDescription',
+        'updatedAt', 'updatedBy'
+      ])
+      && data.keys().hasOnly([
+        'groomName', 'brideName', 'hostsName', 'weddingDateLabel', 'weddingIsoTarget',
+        'venueName', 'venueAddress', 'venueCity', 'invitationMessage',
+        'haldiTitle', 'haldiTime', 'haldiVenue', 'haldiDressCode', 'haldiDescription',
+        'weddingTitle', 'weddingTime', 'weddingVenue', 'weddingDressCode', 'weddingDescription',
+        'googleMapsUrl', 'videoInvitationUrl', 'updatedAt', 'updatedBy'
+      ])
+      && data.groomName is string && data.groomName.size() >= 1 && data.groomName.size() <= 80
+      && data.brideName is string && data.brideName.size() >= 1 && data.brideName.size() <= 80
+      && data.hostsName is string && data.hostsName.size() >= 1 && data.hostsName.size() <= 120
+      && data.weddingDateLabel is string && data.weddingDateLabel.size() >= 1 && data.weddingDateLabel.size() <= 80
+      && data.weddingIsoTarget is string && data.weddingIsoTarget.size() >= 10 && data.weddingIsoTarget.size() <= 40
+      && data.venueName is string && data.venueName.size() >= 1 && data.venueName.size() <= 140
+      && data.venueAddress is string && data.venueAddress.size() >= 1 && data.venueAddress.size() <= 240
+      && data.venueCity is string && data.venueCity.size() >= 1 && data.venueCity.size() <= 100
+      && data.invitationMessage is string && data.invitationMessage.size() >= 1 && data.invitationMessage.size() <= 500
+      && data.haldiTitle is string && data.haldiTitle.size() >= 1 && data.haldiTitle.size() <= 100
+      && data.haldiTime is string && data.haldiTime.size() >= 1 && data.haldiTime.size() <= 80
+      && data.haldiVenue is string && data.haldiVenue.size() >= 1 && data.haldiVenue.size() <= 140
+      && data.haldiDressCode is string && data.haldiDressCode.size() >= 1 && data.haldiDressCode.size() <= 140
+      && data.haldiDescription is string && data.haldiDescription.size() >= 1 && data.haldiDescription.size() <= 400
+      && data.weddingTitle is string && data.weddingTitle.size() >= 1 && data.weddingTitle.size() <= 100
+      && data.weddingTime is string && data.weddingTime.size() >= 1 && data.weddingTime.size() <= 80
+      && data.weddingVenue is string && data.weddingVenue.size() >= 1 && data.weddingVenue.size() <= 140
+      && data.weddingDressCode is string && data.weddingDressCode.size() >= 1 && data.weddingDressCode.size() <= 140
+      && data.weddingDescription is string && data.weddingDescription.size() >= 1 && data.weddingDescription.size() <= 400
+      && (!('googleMapsUrl' in data) || (data.googleMapsUrl is string && data.googleMapsUrl.size() <= 500))
+      && (!('videoInvitationUrl' in data) || (data.videoInvitationUrl is string && data.videoInvitationUrl.size() <= 300))
+      && data.updatedAt == request.time
+      && data.updatedBy is string && data.updatedBy.size() <= 120 && data.updatedBy == request.auth.token.email;
+    }
+
+    function isValidPublicInvitee(data) {
+      return data.keys().hasAll(['headOfFamilyName', 'nameLower', 'side', 'availability', 'updatedAt'])
+        && data.keys().hasOnly(['headOfFamilyName', 'nameLower', 'side', 'availability', 'updatedAt'])
+        && data.headOfFamilyName is string && data.headOfFamilyName.size() >= 1 && data.headOfFamilyName.size() <= 120
+        && data.nameLower is string && data.nameLower.size() >= 1 && data.nameLower.size() <= 120
+        && data.side is string && data.side in ["Bride's Family", "Groom's Family", "Close Friends"]
+        && data.availability is string && data.availability in ["Pending", "Will Attend with Family", "Unable to Attend"]
+        && data.updatedAt == request.time;
+    }
+
+    function isValidRsvpLookup(data) {
+      return data.keys().hasAll(['inviteeId', 'headOfFamilyName', 'side', 'availability', 'updatedAt'])
+        && data.keys().hasOnly(['inviteeId', 'headOfFamilyName', 'side', 'availability', 'updatedAt'])
+        && isValidId(data.inviteeId)
+        && data.headOfFamilyName is string && data.headOfFamilyName.size() >= 1 && data.headOfFamilyName.size() <= 120
+        && data.side is string && data.side in ["Bride's Family", "Groom's Family", "Close Friends"]
+        && data.availability is string && data.availability in ["Pending", "Will Attend with Family", "Unable to Attend"]
+        && data.updatedAt == request.time;
+    }
+
+    function isValidInviteePrivateCreate(data) {
+      return data.keys().hasAll(['tentativeGuests', 'phone', 'note', 'addedBy', 'notifiedVia', 'updatedAt'])
+        && data.keys().hasOnly(['tentativeGuests', 'phone', 'note', 'addedBy', 'notifiedVia', 'updatedAt'])
+        && data.tentativeGuests is int && data.tentativeGuests >= 1 && data.tentativeGuests <= 30
+        && data.phone is string && data.phone.size() >= 7 && data.phone.size() <= 30
+        && data.note is string && data.note.size() <= 500
+        && data.addedBy is string && data.addedBy.size() <= 120
+        && data.notifiedVia is string && data.notifiedVia in ["Pending", "WhatsApp", "SMS"]
+        && data.updatedAt == request.time;
+    }
+
+    function isValidInviteePrivateUpdate(data) {
+      return data.keys().hasAll(['tentativeGuests', 'phone', 'note', 'addedBy', 'updatedAt'])
+        && data.keys().hasOnly(['tentativeGuests', 'phone', 'note', 'addedBy', 'notifiedVia', 'updatedAt'])
+        && data.tentativeGuests is int && data.tentativeGuests >= 1 && data.tentativeGuests <= 30
+        && data.phone is string && data.phone.size() <= 30
+        && data.note is string && data.note.size() <= 500
+        && data.addedBy is string && data.addedBy.size() <= 120
+        && (!('notifiedVia' in data) || (data.notifiedVia is string && data.notifiedVia in ["Pending", "WhatsApp", "SMS"]))
+        && data.updatedAt == request.time;
+    }
+
+    function isValidHostMember(data, memberId) {
+      return data.keys().hasAll(['email', 'name', 'role', 'addedBy', 'createdAt'])
+        && data.keys().hasOnly(['email', 'name', 'role', 'addedBy', 'createdAt'])
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 120 && data.email == memberId
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 80
+        && data.role is string && data.role.size() >= 1 && data.role.size() <= 60
+        && data.addedBy is string && data.addedBy.size() <= 120 && data.addedBy == request.auth.token.email
+        && data.createdAt == request.time;
+    }
+
+    function isValidRsvp(data) {
+      return data.keys().hasAll(['name', 'side', 'attendance', 'guestCount', 'phone', 'note', 'createdAt'])
+        && data.keys().hasOnly(['name', 'side', 'attendance', 'guestCount', 'phone', 'note', 'createdAt'])
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 100
+        && data.side is string && data.side in ["Bride's Family", "Groom's Family", "Close Friends"]
+        && data.attendance is string && data.attendance in ["Both", "Morning Haldi Only", "Evening Wedding Only", "Unable to Attend"]
+        && data.guestCount is int && data.guestCount >= 1 && data.guestCount <= 15
+        && data.phone is string && data.phone.size() <= 30
+        && data.note is string && data.note.size() <= 500
+        && data.createdAt == request.time;
+    }
+
+    function isValidRsvpHostUpdate(data) {
+      return data.keys().hasAll(['name', 'side', 'attendance', 'guestCount', 'phone', 'note', 'createdAt'])
+        && data.keys().hasOnly(['name', 'side', 'attendance', 'guestCount', 'phone', 'note', 'createdAt'])
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 100
+        && data.side is string && data.side in ["Bride's Family", "Groom's Family", "Close Friends"]
+        && data.attendance is string && data.attendance in ["Both", "Morning Haldi Only", "Evening Wedding Only", "Unable to Attend"]
+        && data.guestCount is int && data.guestCount >= 1 && data.guestCount <= 15
+        && data.phone is string && data.phone.size() <= 30
+        && data.note is string && data.note.size() <= 500
+        && data.createdAt == existing().createdAt;
+    }
+
+    function isValidWish(data) {
+      return data.keys().hasAll(['guestName', 'relationship', 'ceremony', 'message', 'createdAt'])
+        && data.keys().hasOnly(['guestName', 'relationship', 'ceremony', 'message', 'createdAt'])
+        && data.guestName is string && data.guestName.size() >= 1 && data.guestName.size() <= 80
+        && data.relationship is string && data.relationship.size() <= 60
+        && data.ceremony is string && data.ceremony in ["Morning Haldi", "Evening Wedding", "Both Celebrations"]
+        && data.message is string && data.message.size() >= 2 && data.message.size() <= 500
+        && data.createdAt == request.time;
+    }
+
+    function isValidVendorFields(data) {
+      return data.keys().hasAll(['name', 'category', 'status', 'ceremony', 'contact', 'estimate', 'notes', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['name', 'category', 'status', 'ceremony', 'contact', 'estimate', 'notes', 'createdAt', 'updatedAt'])
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 100
+        && data.category is string && data.category in [
+          "Decor & Mandap", "Catering & Feast", "Photography & Cinema",
+          "Couture & Styling", "Music & Baraat", "Hospitality & Stay", "Other"
+        ]
+        && data.status is string && data.status in ["Confirmed / Booked", "In Inquiry / Pending", "Signature / Luxury"]
+        && data.ceremony is string && data.ceremony in ["Morning Haldi", "Evening Wedding", "Both Celebrations"]
+        && data.contact is string && data.contact.size() <= 100
+        && data.estimate is string && data.estimate.size() <= 60
+        && data.notes is string && data.notes.size() <= 400;
+    }
+
+    function isValidWeddingEventFields(data) {
+      return data.keys().hasAll([
+        'title', 'chapterLabel', 'dateLabel', 'timeLabel', 'venue',
+        'dressCode', 'description', 'imageKey', 'sortOrder', 'createdAt', 'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'title', 'chapterLabel', 'dateLabel', 'timeLabel', 'venue',
+        'dressCode', 'description', 'imageKey', 'sortOrder', 'createdAt', 'updatedAt'
+      ])
+      && data.title is string && data.title.size() >= 1 && data.title.size() <= 120
+      && data.chapterLabel is string && data.chapterLabel.size() <= 80
+      && data.dateLabel is string && data.dateLabel.size() >= 1 && data.dateLabel.size() <= 80
+      && data.timeLabel is string && data.timeLabel.size() >= 1 && data.timeLabel.size() <= 80
+      && data.venue is string && data.venue.size() >= 1 && data.venue.size() <= 140
+      && data.dressCode is string && data.dressCode.size() <= 140
+      && data.description is string && data.description.size() <= 500
+      && data.imageKey is string && data.imageKey in ["haldi", "wedding", "custom"]
+      && data.sortOrder is int && data.sortOrder >= 0 && data.sortOrder <= 100;
+    }
+
+    function isValidHostNotification(data) {
+      return data.keys().hasAll(['type', 'actorName', 'summary', 'recipientEmail', 'read', 'createdAt'])
+        && data.keys().hasOnly(['type', 'actorName', 'summary', 'recipientEmail', 'read', 'createdAt'])
+        && data.type is string && data.type in ['blessing', 'rsvp']
+        && data.actorName is string && data.actorName.size() >= 1 && data.actorName.size() <= 120
+        && data.summary is string && data.summary.size() >= 1 && data.summary.size() <= 500
+        && data.recipientEmail is string && data.recipientEmail == 'prakhar.saxena579@gmail.com'
+        && data.read is bool && data.read == false
+        && data.createdAt == request.time;
+    }
+
+    function isValidHostNotificationUpdate(data) {
+      return data.keys().hasAll(['type', 'actorName', 'summary', 'recipientEmail', 'read', 'createdAt'])
+        && data.keys().hasOnly(['type', 'actorName', 'summary', 'recipientEmail', 'read', 'createdAt'])
+        && data.type == existing().type
+        && data.actorName == existing().actorName
+        && data.summary == existing().summary
+        && data.recipientEmail == existing().recipientEmail
+        && data.read is bool
+        && data.createdAt == existing().createdAt;
+    }
+
+    function isValidExpense(data) {
+      return data.keys().hasAll([
+        'title', 'category', 'amount', 'paymentMode', 'paymentStatus',
+        'paidBy', 'expenseDate', 'notes', 'linkedVendorId', 'addedBy',
+        'createdAt', 'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'title', 'category', 'amount', 'paymentMode', 'paymentStatus',
+        'paidBy', 'expenseDate', 'notes', 'linkedVendorId', 'addedBy',
+        'createdAt', 'updatedAt'
+      ])
+      && data.title is string && data.title.size() >= 1 && data.title.size() <= 140
+      && data.category is string && data.category in [
+        'Venue & Catering',
+        'Dresses & Couture',
+        'Return Gifts & Favors',
+        'Jewellery & Shagun',
+        'Decor & Flowers',
+        'Photography & Cinema',
+        'Travel & Hospitality',
+        'Pandit & Rituals',
+        'Other / Misc'
+      ]
+      && (data.amount is int || data.amount is float) && data.amount >= 0 && data.amount <= 100000000
+      && data.paymentMode is string && data.paymentMode in [
+        'UPI', 'Cash', 'Bank Transfer / NEFT', 'Card', 'Cheque', 'Pending'
+      ]
+      && data.paymentStatus is string && data.paymentStatus in [
+        'Paid', 'Advance Paid', 'Pending'
+      ]
+      && data.paidBy is string && data.paidBy.size() <= 80
+      && data.expenseDate is string && data.expenseDate.size() <= 20
+      && data.notes is string && data.notes.size() <= 500
+      && data.linkedVendorId is string && data.linkedVendorId.size() <= 128
+      && data.addedBy is string && data.addedBy.size() <= 120;
+    }
+
+    // Live Wedding Configuration ('main' document only)
+    match /weddingConfig/{configId} {
+      allow get: if isValidId(configId) && configId == 'main';
+      allow list: if false;
+      allow create, update: if isHost() && isValidId(configId) && configId == 'main' && isValidWeddingConfig(incoming());
+      allow delete: if false;
+    }
+
+    // Flexible Ceremony Events List (Public read, Host-only edit/add/delete)
+    match /weddingEvents/{eventId} {
+      allow get: if isValidId(eventId);
+      allow list: if request.query.limit <= 30;
+      allow create: if isHost() && isValidId(eventId)
+        && isValidWeddingEventFields(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isHost() && isValidId(eventId)
+        && isValidWeddingEventFields(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'chapterLabel', 'dateLabel', 'timeLabel', 'venue',
+          'dressCode', 'description', 'imageKey', 'sortOrder', 'updatedAt'
+        ]);
+      allow delete: if isHost() && isValidId(eventId);
+    }
+
+    // Public Family Invitee Directory (Zero PII: only name, side, availability)
+    match /publicInvitees/{inviteeId} {
+      allow get: if isValidId(inviteeId);
+      allow list: if request.query.limit <= 300;
+      allow create: if isHost() && isValidId(inviteeId) && isValidPublicInvitee(incoming());
+      allow update: if isValidId(inviteeId) && isValidPublicInvitee(incoming()) && (
+        isHost() || (
+          incoming().headOfFamilyName == existing().headOfFamilyName
+          && incoming().nameLower == existing().nameLower
+          && incoming().side == existing().side
+          && incoming().diff(existing()).affectedKeys().hasOnly(['availability', 'updatedAt'])
+        )
+      );
+      allow delete: if isHost() && isValidId(inviteeId);
+    }
+
+    // Hashed Mobile-Number RSVP Lookup (No listing allowed; guests fetch only by exact phone hash)
+    match /rsvpLookup/{lookupId} {
+      allow get: if isValidId(lookupId);
+      allow list: if false;
+      allow create: if isHost() && isValidId(lookupId) && isValidRsvpLookup(incoming());
+      allow update: if isValidId(lookupId) && isValidRsvpLookup(incoming()) && (
+        isHost() || (
+          incoming().inviteeId == existing().inviteeId
+          && incoming().headOfFamilyName == existing().headOfFamilyName
+          && incoming().side == existing().side
+          && incoming().diff(existing()).affectedKeys().hasOnly(['availability', 'updatedAt'])
+        )
+      );
+      allow delete: if isHost() && isValidId(lookupId);
+    }
+
+    // Private Invitee Details (Tentative Guest Counts, Phone, Notes - strictly Host-Only)
+    match /inviteePrivate/{inviteeId} {
+      allow get: if isHost() && isValidId(inviteeId);
+      allow list: if isHost();
+      allow create: if isHost() && isValidId(inviteeId) && isValidInviteePrivateCreate(incoming());
+      allow update: if isHost() && isValidId(inviteeId)
+        && isValidInviteePrivateUpdate(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['tentativeGuests', 'phone', 'note', 'addedBy', 'notifiedVia', 'updatedAt']);
+      allow delete: if isHost() && isValidId(inviteeId);
+    }
+
+    // Locked Multi-Host Allowlist (Strictly hardcoded 4 emails in isHost() above)
+    match /hostMembers/{memberId} {
+      allow read, write: if false;
+    }
+
+    // Legacy Guest RSVPs (Host-only read/manage, new public creates disabled)
+    match /rsvps/{rsvpId} {
+      allow create: if false;
+      allow get: if isHost() && isValidId(rsvpId);
+      allow list: if isHost();
+      allow update: if isHost() && isValidId(rsvpId) && isValidRsvpHostUpdate(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'side', 'attendance', 'guestCount', 'phone', 'note']);
+      allow delete: if isHost() && isValidId(rsvpId);
+    }
+
+    // Real-time Family Blessings Wall
+    match /wishes/{wishId} {
+      allow get: if isValidId(wishId);
+      allow list: if request.query.limit <= 100;
+      allow create: if isValidId(wishId) && isValidWish(incoming());
+      allow update: if false;
+      allow delete: if isHost() && isValidId(wishId);
+    }
+
+    // Host-Only Wedding Vendor & Atelier Tracker
+    match /vendors/{vendorId} {
+      allow get: if isHost() && isValidId(vendorId);
+      allow list: if isHost();
+      allow create: if isHost() && isValidId(vendorId)
+        && isValidVendorFields(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isHost() && isValidId(vendorId)
+        && isValidVendorFields(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'category', 'status', 'ceremony', 'contact', 'estimate', 'notes', 'updatedAt']);
+      allow delete: if isHost() && isValidId(vendorId);
+    }
+
+    // Real-time Host Activity Notifications (Blessing & RSVP Alerts)
+    match /hostNotifications/{notifId} {
+      allow get: if isHost() && isValidId(notifId);
+      allow list: if isHost();
+      allow create: if isValidId(notifId) && isValidHostNotification(incoming());
+      allow update: if isHost() && isValidId(notifId)
+        && isValidHostNotificationUpdate(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['read']);
+      allow delete: if isHost() && isValidId(notifId);
+    }
+
+    // Host-Only Wedding Expense & Payment Ledger
+    match /expenses/{expenseId} {
+      allow get: if isHost() && isValidId(expenseId);
+      allow list: if isHost();
+      allow create: if isHost() && isValidId(expenseId)
+        && isValidExpense(incoming())
+        && incoming().addedBy == request.auth.token.email
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isHost() && isValidId(expenseId)
+        && isValidExpense(incoming())
+        && incoming().addedBy == existing().addedBy
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'category', 'amount', 'paymentMode', 'paymentStatus',
+          'paidBy', 'expenseDate', 'notes', 'linkedVendorId', 'updatedAt'
+        ]);
+      allow delete: if isHost() && isValidId(expenseId);
+    }
+  }
+}

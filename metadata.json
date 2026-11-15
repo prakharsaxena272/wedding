@@ -1,0 +1,6 @@
+{
+  "name": "Prakhar & Prakriti — Wedding Celebration",
+  "description": "Join Vijay & Shipra Saxena in celebrating the wedding of Prakhar & Prakriti on February 2, 2027. View ceremony schedules, RSVP, and share family blessings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

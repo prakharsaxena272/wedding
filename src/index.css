@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background-color: #fdf5f8;
+    color: #231420;
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: rgba(142, 59, 110, 0.16);
+  }
+
+  h1, h2, h3, .font-editorial {
+    font-family: var(--font-serif);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Fluid Responsive Editorial Typography */
+.editorial-hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 6.2vw, 3.125rem);
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.editorial-ampersand {
+  font-family: var(--font-serif);
+  font-size: clamp(1.45rem, 4.6vw, 2.4rem);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.editorial-section-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 4.8vw, 2.25rem);
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.editorial-card-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 3.8vw, 1.75rem);
+  line-height: 1.24;
+  text-wrap: balance;
+}
+
+.editorial-lead {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+  line-height: 1.62;
+}
+
+.editorial-body {
+  font-size: clamp(0.875rem, 2.3vw, 0.9375rem);
+  line-height: 1.65;
+}
+
+@keyframes editorialShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.shimmer-couple-accent {
+  color: #8E3B6E;
+  background-image: linear-gradient(
+    110deg,
+    #8E3B6E 0%,
+    #6B4C8C 28%,
+    #B65E8A 50%,
+    #6B4C8C 72%,
+    #8E3B6E 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: editorialShimmer 8s linear infinite;
+}
+
+/* Custom Rose-Plum Scrollbar for Blessings Wall */
+.blessings-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(142, 59, 110, 0.4) rgba(239, 224, 234, 0.55);
+}
+
+.blessings-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.blessings-scroll::-webkit-scrollbar-track {
+  background: rgba(239, 224, 234, 0.55);
+  border-radius: 9999px;
+}
+
+.blessings-scroll::-webkit-scrollbar-thumb {
+  background: rgba(142, 59, 110, 0.38);
+  border-radius: 9999px;
+}
+
+.blessings-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(142, 59, 110, 0.6);
+}
+
+.double-filigree-card {
+  position: relative;
+  background: linear-gradient(155deg, #fbf0f6 0%, #f5eaf4 100%);
+  border: 1px solid #e4cde0;
+  box-shadow: 0 10px 32px -6px rgba(142, 59, 110, 0.12), 0 2px 8px -2px rgba(107, 76, 140, 0.06);
+}
+
+.double-filigree-card::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(142, 59, 110, 0.24);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.frosted-veil {
+  background: rgba(253, 245, 248, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.label-caps {
+  font-family: var(--font-sans);
+  font-size: clamp(0.625rem, 2.1vw, 0.6875rem);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: clamp(0.08em, 0.3vw, 0.13em);
+  text-transform: uppercase;
+}
+
+.pb-safe {
+  padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
+}

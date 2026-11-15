@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="96" fill="#FDF5F8"/>
+  <rect x="28" y="28" width="456" height="456" rx="76" stroke="#8E3B6E" stroke-opacity="0.35" stroke-width="3"/>
+  <circle cx="256" cy="256" r="184" stroke="#8E3B6E" stroke-width="4"/>
+  <circle cx="256" cy="256" r="170" stroke="#6B4C8C" stroke-opacity="0.45" stroke-width="1.5" stroke-dasharray="6 6"/>
+  <path d="M256 54L263 72L281 79L263 86L256 104L249 86L231 79L249 72L256 54Z" fill="#8E3B6E"/>
+  <path d="M256 408L263 426L281 433L263 440L256 458L249 440L231 433L249 426L256 408Z" fill="#8E3B6E"/>
+  <text x="256" y="274" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="112" font-weight="600" letter-spacing="4" fill="#231420">P&amp;P</text>
+  <text x="256" y="330" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="600" letter-spacing="8" fill="#6B4C8C">02 · 02 · 27</text>
+</svg>
